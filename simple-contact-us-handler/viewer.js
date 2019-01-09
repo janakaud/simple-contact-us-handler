@@ -8,6 +8,7 @@ exports.handler = function (event, context, callback) {
 		statusCode: 200,
 		isBase64Encoded: false
 	}
+
 	ddb.scan({
 		TableName: 'contact_us',
 		ExpressionAttributeValues: {

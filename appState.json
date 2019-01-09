@@ -23,7 +23,7 @@
         "children": [],
         "isRemovable": true,
         "filePath": "simple-contact-us-handler/handler.js",
-        "code": "let AWS = require('aws-sdk');\nconst ddb = new AWS.DynamoDB.DocumentClient();\nconst validate = require(\"validate.js\");\n\nexports.handler = function (event, context, callback) {\n\t//validating email and name\n\tvar constraints = {\n\t\temail: {\n\t\t\tpresence: true,\n\t\t\temail: true\n\t\t},\n\t\tname: {\n\t\t\tpresence: true,\n\t\t\tlength: {\n\t\t\t\tminimum: 1\n\t\t\t},\n\t\t}\n\t};\n\n\tlet invalid = validate(event, constraints);\n\n\tif (!invalid) {\n\t\tlet today = new Date().toLocaleDateString();\n\t\tddb.put({\n\t\t\tTableName: 'contact_us',\n\t\t\tItem: {\n\t\t\t\t'name': event.name,\n\t\t\t\t'email': event.email,\n\t\t\t\t'phone': event.phone,\n\t\t\t\t'company': event.company,\n\t\t\t\t'comment': event.comment,\n\t\t\t\t'entryDate': today\n\t\t\t}\n\t\t}, function (err, data) {\n\t\t\tif (err) {\n\t\t\t\tcallback(err, null);\n\t\t\t} else {\n\t\t\t\tcallback(null, \"Successfully Saved Entry!\");\n\t\t\t}\n\t\t});\n\t} else {\n\t\tcallback(JSON.stringify(invalid), null);\n\t}\n}",
+        "code": "let AWS = require('aws-sdk');\nconst ddb = new AWS.DynamoDB.DocumentClient();\nconst validate = require(\"validate.js\");\n\nexports.handler = function (event, context, callback) {\n\t//validating email and name\n\tvar constraints = {\n\t\temail: {\n\t\t\tpresence: true,\n\t\t\temail: true\n\t\t},\n\t\tname: {\n\t\t\tpresence: true,\n\t\t\tlength: {\n\t\t\t\tminimum: 1\n\t\t\t},\n\t\t}\n\t};\n\tlet invalid = validate(event, constraints);\n\n\tif (!invalid) {\n\t\tlet today = new Date().toLocaleDateString();\n\t\tddb.put({\n\t\t\tTableName: 'contact_us',\n\t\t\tItem: {\n\t\t\t\t'name': event.name,\n\t\t\t\t'email': event.email,\n\t\t\t\t'phone': event.phone,\n\t\t\t\t'company': event.company,\n\t\t\t\t'comment': event.comment,\n\t\t\t\t'entryDate': today\n\t\t\t}\n\t\t}, function (err, data) {\n\t\t\tif (err) {\n\t\t\t\tcallback(err, null);\n\t\t\t} else {\n\t\t\t\tcallback(null, \"Successfully Saved Entry!\");\n\t\t\t}\n\t\t});\n\t} else {\n\t\tcallback(JSON.stringify(invalid), null);\n\t}\n}",
         "triggers": [
           {
             "resourceName": "apigusEast1contactuscontactpost",
@@ -40,7 +40,7 @@
         "children": [],
         "isRemovable": true,
         "filePath": "simple-contact-us-handler/viewer.js",
-        "code": "let AWS = require('aws-sdk');\nconst ddb = new AWS.DynamoDB.DocumentClient();\n\nexports.handler = function (event, context, callback) {\n\tlet searchDate = event.queryStringParameters.date;\n\tlet response = {\n\t\tbody: \"\",\n\t\tstatusCode: 200,\n\t\tisBase64Encoded: false\n\t}\n\tddb.scan({\n\t\tTableName: 'contact_us',\n\t\tExpressionAttributeValues: {\n\t\t\t':filterDate': searchDate\n\t\t},\n\t\tFilterExpression: 'entryDate = :filterDate'\n\t}, function (err, data) {\n\t\tif (err) {\n\t\t\tresponse.body = JSON.stringify(err);\n\t\t\tcallback(response, null);\n\t\t} else {\n\t\t\tresponse.body = JSON.stringify(data);\n\t\t\tcallback(null, response);\n\t\t}\n\t});\n}",
+        "code": "let AWS = require('aws-sdk');\nconst ddb = new AWS.DynamoDB.DocumentClient();\n\nexports.handler = function (event, context, callback) {\n\tlet searchDate = event.queryStringParameters.date;\n\tlet response = {\n\t\tbody: \"\",\n\t\tstatusCode: 200,\n\t\tisBase64Encoded: false\n\t}\n\n\tddb.scan({\n\t\tTableName: 'contact_us',\n\t\tExpressionAttributeValues: {\n\t\t\t':filterDate': searchDate\n\t\t},\n\t\tFilterExpression: 'entryDate = :filterDate'\n\t}, function (err, data) {\n\t\tif (err) {\n\t\t\tresponse.body = JSON.stringify(err);\n\t\t\tcallback(response, null);\n\t\t} else {\n\t\t\tresponse.body = JSON.stringify(data);\n\t\t\tcallback(null, response);\n\t\t}\n\t});\n}",
         "triggers": [
           {
             "resourceName": "apigusEast1contactusviewget",
@@ -54,7 +54,7 @@
       "1fe8cc6a-6339-45df-ac00-44376a53c2c1",
       "8d0c1e1b-48c7-4ea8-87b5-ab407298bc23"
     ],
-    "currentFileId": "8d0c1e1b-48c7-4ea8-87b5-ab407298bc23",
+    "currentFileId": "1fe8cc6a-6339-45df-ac00-44376a53c2c1",
     "resources": {
       "apigusEast1contactuscontactpost": {
         "name": "apigusEast1contactuscontactpost",
@@ -155,14 +155,15 @@
     "projectRegion": "us-east-1",
     "repoName": "simple-contact-us-handler",
     "repoUrl": "https://github.com/slappforge/simple-contact-us-handler",
-    "lastSave": 1547017490111,
+    "lastSave": 1547017567866,
     "platform": "AWS",
     "platformRegions": {}
   },
   "VCS_STATE": {
     "provider": "GitHub",
     "repo": {
-      "url": "https://github.com/janakaud/simple-contact-us-handler"
+      "url": "https://github.com/janakaud/simple-contact-us-handler",
+      "name": "simple-contact-us-handler"
     }
   }
 }
