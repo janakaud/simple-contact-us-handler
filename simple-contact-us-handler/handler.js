@@ -16,6 +16,7 @@ exports.handler = function (event, context, callback) {
 			},
 		}
 	};
+
 	let invalid = validate(event, constraints);
 
 	if (!invalid) {
