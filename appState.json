@@ -23,7 +23,6 @@
         "children": [],
         "isRemovable": true,
         "filePath": "simple-contact-us-handler/handler.js",
-        "code": "let AWS = require('aws-sdk');\nconst ddb = new AWS.DynamoDB.DocumentClient();\nconst validate = require(\"validate.js\");\n\nexports.handler = function (event, context, callback) {\n\t//validating email and name\n\tvar constraints = {\n\t\temail: {\n\t\t\tpresence: true,\n\t\t\temail: true\n\t\t},\n\t\tname: {\n\t\t\tpresence: true,\n\t\t\tlength: {\n\t\t\t\tminimum: 1\n\t\t\t},\n\t\t}\n\t};\n\n\tlet invalid = validate(event, constraints);\n\n\tif (!invalid) {\n\t\tlet today = new Date().toLocaleDateString();\n\t\tddb.put({\n\t\t\tTableName: 'contact_us',\n\t\t\tItem: {\n\t\t\t\t'name': event.name,\n\t\t\t\t'email': event.email,\n\t\t\t\t'phone': event.phone,\n\t\t\t\t'company': event.company,\n\t\t\t\t'comment': event.comment,\n\t\t\t\t'entryDate': today\n\t\t\t}\n\t\t}, function (err, data) {\n\t\t\tif (err) {\n\t\t\t\tcallback(err, null);\n\t\t\t} else {\n\t\t\t\tcallback(null, \"Successfully Saved Entry!\");\n\t\t\t}\n\t\t});\n\t} else {\n\t\tcallback(JSON.stringify(invalid), null);\n\t}\n}",
         "triggers": [
           {
             "resourceName": "apigusEast1contactuscontactpost",
@@ -31,11 +30,15 @@
           }
         ],
         "config": {
-          "runtime": "nodejs8.10",
+          "runtime": "nodejs10.x",
           "handler": "handler",
           "timeout": 60,
           "memory": 128,
           "layers": []
+        },
+        "cursor": {
+          "lineNumber": 8,
+          "column": 11
         }
       },
       "8d0c1e1b-48c7-4ea8-87b5-ab407298bc23": {
@@ -47,7 +50,6 @@
         "children": [],
         "isRemovable": true,
         "filePath": "simple-contact-us-handler/viewer.js",
-        "code": "let AWS = require('aws-sdk');\nconst ddb = new AWS.DynamoDB.DocumentClient();\n\nexports.handler = function (event, context, callback) {\n\tlet searchDate = event.queryStringParameters.date;\n\tlet response = {\n\t\tbody: \"\",\n\t\tstatusCode: 200,\n\t\tisBase64Encoded: false\n\t}\n\tddb.scan({\n\t\tTableName: 'contact_us',\n\t\tExpressionAttributeValues: {\n\t\t\t':filterDate': searchDate\n\t\t},\n\t\tFilterExpression: 'entryDate = :filterDate'\n\t}, function (err, data) {\n\t\tif (err) {\n\t\t\tresponse.body = JSON.stringify(err);\n\t\t\tcallback(response, null);\n\t\t} else {\n\t\t\tresponse.body = JSON.stringify(data);\n\t\t\tcallback(null, response);\n\t\t}\n\t});\n}",
         "triggers": [
           {
             "resourceName": "apigusEast1contactusviewget",
@@ -55,20 +57,23 @@
           }
         ],
         "config": {
-          "runtime": "nodejs8.10",
+          "runtime": "nodejs10.x",
           "handler": "handler",
           "timeout": 60,
           "memory": 128,
           "layers": []
+        },
+        "cursor": {
+          "lineNumber": 3,
+          "column": 1
         }
       }
     },
-    "deletedFiles": [],
-    "rootNode": "592f3252-0358-4b4e-bd5b-dd686cbd78fc",
     "openFiles": [
-      "1fe8cc6a-6339-45df-ac00-44376a53c2c1"
+      "1fe8cc6a-6339-45df-ac00-44376a53c2c1",
+      "8d0c1e1b-48c7-4ea8-87b5-ab407298bc23"
     ],
-    "currentFileId": "1fe8cc6a-6339-45df-ac00-44376a53c2c1",
+    "currentFileId": "8d0c1e1b-48c7-4ea8-87b5-ab407298bc23",
     "resources": {
       "apigusEast1contactuscontactpost": {
         "name": "apigusEast1contactuscontactpost",
@@ -89,38 +94,6 @@
         },
         "globallyEditable": true
       },
-      "ddbcontactus": {
-        "name": "ddbcontactus",
-        "type": "DynamoDB",
-        "config": {
-          "mode": 0,
-          "operation": "scan",
-          "table": {
-            "arn": "",
-            "name": "contact_us",
-            "partitionKey": "email",
-            "partitionKeyType": "S",
-            "hasSortKey": false,
-            "sortKey": "",
-            "sortKeyType": "S",
-            "mode": 0
-          },
-          "isGlobalEditMode": false,
-          "parameters": {
-            "TableName": "contact_us",
-            "ExpressionAttributeValues": {
-              ":filterDate": "Wed Feb 07 2018"
-            },
-            "FilterExpression": "entryDate = :filterDate"
-          },
-          "validator": {
-            "validatableFields": {},
-            "validity": true
-          },
-          "valid": true
-        },
-        "globallyEditable": false
-      },
       "apigusEast1contactusviewget": {
         "name": "apigusEast1contactusviewget",
         "type": "API_GATEWAY",
@@ -139,11 +112,41 @@
           "stageName": "Prod"
         },
         "globallyEditable": true
+      },
+      "ddbcontactus": {
+        "name": "ddbcontactus",
+        "type": "DynamoDB",
+        "config": {
+          "mode": 0,
+          "table": {
+            "arn": "",
+            "name": "contact_us",
+            "partitionKey": "email",
+            "partitionKeyType": "S",
+            "hasSortKey": false,
+            "sortKey": "",
+            "sortKeyType": "S",
+            "mode": 0,
+            "payPerRequest": true
+          },
+          "isGlobalEditMode": true,
+          "parameters": {
+            "Key": {},
+            "Item": {},
+            "ExpressionAttributeValues": {}
+          },
+          "triggerParams": {},
+          "validator": {
+            "validatableFields": {},
+            "validity": true
+          },
+          "valid": true
+        }
       }
     },
     "customTemplate": {
       "dialect": null,
-      "definitions": {}
+      "definitions": null
     },
     "envVariables": [
       {
@@ -161,7 +164,7 @@
           "name": "aws-sdk",
           "version": "2.176.0",
           "notRemovable": true,
-          "language": "javascript",
+          "language": "nodejs",
           "dev": true
         },
         "validate.js": {
@@ -324,10 +327,11 @@
               }
             ]
           },
-          "language": "javascript"
+          "language": "nodejs"
         }
       }
     },
+    "rootNode": "592f3252-0358-4b4e-bd5b-dd686cbd78fc",
     "lambdaId": "1fe8cc6a-6339-45df-ac00-44376a53c2c1",
     "additionalFiles": []
   },
@@ -337,8 +341,9 @@
     "projectVersion": "1.0.0",
     "projectRegion": "us-east-1",
     "platform": "AWS",
+    "language": "nodejs",
     "platformRegions": {},
-    "lastSave": 1554191781209
+    "lastSave": 1581567462135
   },
   "VCS_STATE": {
     "provider": "GitHub",
